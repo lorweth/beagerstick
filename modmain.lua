@@ -19,5 +19,5 @@ STRINGS.NAMES.XIONGGUAN = "Big Bear Stick"
 STRINGS.CHARACTERS.GENERIC.DESCRIBE.XIONGGUAN = "A weapon made of flaming fur"
 STRINGS.RECIPE_DESC.XIONGGUAN = "Flush weapons"
 
-local xiongguan = GLOBAL.Recipe("xiongguan", { Ingredient("hambat", 1),Ingredient("bearger_fur", 4),Ingredient("goldnugget", 4)}, RECIPETABS.WAR, TECH.SCIENCE_TWO)
+local xiongguan = GLOBAL.Recipe("xiongguan", { Ingredient("hambat", 1),Ingredient("houndstooth", 4),Ingredient("goldnugget", 4)}, RECIPETABS.WAR, TECH.SCIENCE_TWO)
 xiongguan.atlas = "images/inventoryimages/xiongguan.xml"

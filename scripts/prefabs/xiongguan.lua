@@ -16,16 +16,14 @@ local function UpdateDamage(inst)
     end
 end
 
-local function OnLoad(inst, data)
-    UpdateDamage(inst)
-end
-
 local function onequip(inst, owner) 
     UpdateDamage(inst)
     owner.AnimState:OverrideSymbol("swap_object","xiongguan_sw","xiongguan")
 	owner.SoundEmitter:PlaySound("dontstarve/wilson/equip_item_gold")
     owner.AnimState:Show("ARM_carry") 
     owner.AnimState:Hide("ARM_normal") 
+
+    owner.components.talker:Say("Valhallaaaaa!")
 end
 
 local function onunequip(inst, owner)
@@ -36,8 +34,23 @@ end
 	
 local function onattack(inst, owner, target)
     UpdateDamage(inst)
-	
-    owner.components.talker:Say("Valhallaaaaa!")
+end
+
+local function beagerstick_oneatfn(inst, food)
+    local health = math.abs(food.components.edible:GetHealth(inst)) * inst.components.eater.healthabsorption
+    local hunger = math.abs(food.components.edible:GetHunger(inst)) * inst.components.eater.hungerabsorption
+    inst.components.perishable:AddTime(health + hunger*10)
+
+    if not inst.inlimbo then
+        inst.AnimState:PlayAnimation("eat")
+        inst.AnimState:PushAnimation("anim", true)
+
+        inst.SoundEmitter:PlaySound("terraria1/eyemask/eat")
+    end
+
+    -- speach when eat
+    local foodtype = food.components.edible.foodtype
+    inst.components.talker:Say("I eat "..tostring(foodtype)..", nom nom nom!")
 end
 	
 local function fn()
@@ -59,6 +72,15 @@ local function fn()
     --weapon (from weapon component) added to pristine state for optimization
     inst:AddTag("weapon")
 
+    --eater (from eater component) added to pristine state for optimization
+    inst:AddTag("handfed")
+    inst:AddTag("fedbyall")
+    inst:AddTag("eatsrawmeat")
+    inst:AddTag("strongstomach")
+
+    --waterproofer (from waterproofer component) added to pristine state for optimization
+    inst:AddTag("waterproofer")
+
     local swap_data = {sym_build = "swap_xiongguan", bank = "xiongguan"}
     MakeInventoryFloatable(inst, "med", nil, {1.0, 0.5, 1.0}, true, -13, swap_data)
 
@@ -73,14 +95,22 @@ local function fn()
     inst.components.perishable:StartPerishing()
     inst.components.perishable.onperishreplacement="spoiled_food"
 
+    inst:AddComponent("tool")
+    inst.components.tool:SetAction(ACTIONS.HAMMER, 2)
+
     inst:AddComponent("weapon")
     inst.components.weapon:SetDamage(68)
     inst.components.weapon:SetOnAttack(onattack)
 
-    inst:AddComponent("forcecompostable")
-    inst.components.forcecompostable.green = true
+    -- To play an eat sound when it's on the ground and fed.
+    inst.entity:AddSoundEmitter()
 
-    inst.OnLoad = OnLoad
+    inst:AddComponent("eater")
+    inst.components.eater:SetOnEatFn(beagerstick_oneatfn)
+    inst.components.eater:SetAbsorptionModifiers(4.0, 1.75, 0)
+    inst.components.eater:SetCanEatRawMeat(true)
+    inst.components.eater:SetStrongStomach(true)
+    inst.components.eater:SetCanEatHorrible(true)
 
     inst:AddComponent("inspectable")
 
@@ -92,6 +122,17 @@ local function fn()
     inst:AddComponent("equippable")
     inst.components.equippable:SetOnEquip(onequip)
     inst.components.equippable:SetOnUnequip(onunequip)
+    inst.components.equippable.dapperness = TUNING.DAPPERNESS_MED_LARGE
+
+    inst:AddComponent("talker")
+    inst.components.talker.fontsize = 28
+    inst.components.talker.font = TALKINGFONT
+    inst.components.talker.colour = Vector3(.9, .4, .4)
+    inst.components.talker.offset = Vector3(0, 0, 0)
+    inst.components.talker.symbol = "swap_object"
+
+    inst:AddComponent("waterproofer")
+    inst.components.waterproofer:SetEffectiveness(TUNING.WATERPROOFNESS_SMALL)
 
     return inst
 
