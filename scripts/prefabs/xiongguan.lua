@@ -23,7 +23,11 @@ local function onequip(inst, owner)
     owner.AnimState:Show("ARM_carry") 
     owner.AnimState:Hide("ARM_normal") 
 
-    owner.components.talker:Say("Valhallaaaaa!")
+    if inst.components.perishable and inst.components.perishable:GetPercent() < 0.5 then
+        owner.components.talker:Say("It too small!")
+    else
+        owner.components.talker:Say("It too big!")
+    end
 end
 
 local function onunequip(inst, owner)
@@ -34,6 +38,18 @@ end
 	
 local function onattack(inst, owner, target)
     UpdateDamage(inst)
+end
+
+local function speach_oneatfn(inst, food)
+    local tb = {
+        MONSTER = "Monster meat, yum yum!",
+        MEAT = "I love meat!",
+        VEGGIE = "Boo, veggies!"
+    }
+
+    local foodtype = food.components.edible.foodtype
+    local str = tb[foodtype] or "I eat "..tostring(foodtype)..", nom nom nom!"
+    inst.components.talker:Say(str)
 end
 
 local function beagerstick_oneatfn(inst, food)
@@ -49,8 +65,7 @@ local function beagerstick_oneatfn(inst, food)
     end
 
     -- speach when eat
-    local foodtype = food.components.edible.foodtype
-    inst.components.talker:Say("I eat "..tostring(foodtype)..", nom nom nom!")
+    speach_oneatfn(inst, food)
 end
 	
 local function fn()
